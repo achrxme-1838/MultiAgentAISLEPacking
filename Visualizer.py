@@ -35,13 +35,13 @@ def txtReader():
     file_path = "data/packed_boxes.txt"
     try:
         with open(file_path, "r") as file:
-            file_contents = file.read()
+            file_cont = file.read()
             # print(file_contents)
             # print(type(file_contents))
     except Exception as e:
         print(f"Open error {str(e)}")
 
-    return file_contents
+    return file_cont
 
 
 def visualize(input_str):

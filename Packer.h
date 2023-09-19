@@ -40,6 +40,8 @@ struct Config{
 class Packer {
 private:
     Config cfg;
+    int WIDTH;
+    int HEIGHT;
 
 public:
     Packer(int W, int H){
@@ -50,6 +52,8 @@ public:
         cfg.right_sky_lines.push_back(right_wall);
 
         cfg.packed_boxes.clear();
+
+        WIDTH = W; HEIGHT = H;
     }
     Config getConfig() { return cfg; }
 
@@ -146,12 +150,28 @@ public:
     }
 
     void generateCP(){
-        int prev_x = 10000;
-        for(auto sl : cfg.left_sky_lines){
-            if(sl.x < prev_x){
+        cfg.CPs.clear();
+        int prev_x;
 
-            }
+        prev_x = WIDTH;
+        for(auto sl : cfg.left_sky_lines){
+            if(sl.x < prev_x) cfg.CPs.push_back(CandidatePos{
+                float(sl.x), float(sl.lower_y), true, true});
+            if(sl.x > prev_x) cfg.CPs.push_back(CandidatePos{
+                float(prev_x), float(sl.lower_y), true, false});
+            prev_x = sl.x;
         }
+        cfg.CPs.push_back(CandidatePos{float(prev_x), float(HEIGHT), true, false});
+
+        prev_x = 0;
+        for(auto sl : cfg.right_sky_lines){
+            if(sl.x > prev_x) cfg.CPs.push_back(CandidatePos{
+                        float(sl.x), float(sl.lower_y), false, true});
+            if(sl.x < prev_x) cfg.CPs.push_back(CandidatePos{
+                        float(prev_x), float(sl.lower_y), false, false});
+            prev_x = sl.x;
+        }
+        cfg.CPs.push_back(CandidatePos{float(prev_x), float(HEIGHT), false, false});
 
     }
 

@@ -41,6 +41,8 @@ int main() {
     packer.packingBox(test_box, test_cp1);
     packer.packingBox(test_box, test_cp2);
 
+    packer.generateCP();
+
     auto cfg = packer.getConfig();
     txtMaker(cfg);
 
