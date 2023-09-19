@@ -15,8 +15,7 @@ class StateRepresentor:
         self.ax.set_title('AISLE')
 
     def draw_rectangle(self, name, x, y, width, height, mode=None):
-
-        rectangle = Rectangle((x-width/2, y-height/2), width, height, edgecolor='black', facecolor='gray')
+        rectangle = Rectangle((x - float(width) / 2, y - float(height) / 2), width, height, edgecolor='black', facecolor='gray')
         self.ax.add_patch(rectangle)
 
         text_x = x
@@ -32,9 +31,47 @@ class StateRepresentor:
             self.ax.add_patch(circle)
 
 
-sr = StateRepresentor(20, 50)
-sr.draw_rectangle('1', 2, 4, 4, 8)
-sr.draw_rectangle('2', 19, 3, 2, 6)
+def txtReader():
+    file_path = "data/packed_boxes.txt"
+    try:
+        with open(file_path, "r") as file:
+            file_contents = file.read()
+            # print(file_contents)
+            # print(type(file_contents))
+    except Exception as e:
+        print(f"Open error {str(e)}")
+
+    return file_contents
+
+
+def visualize(input_str):
+
+    sr = StateRepresentor(40, 100)
+
+    lines = input_str.split('\n')
+
+    box_idx = 0
+    for line in lines:
+        box_idx += 1
+        nums = line.split(' ')
+        if nums[0] == '':
+            break
+        sr.draw_rectangle(box_idx, float(nums[2]), float(nums[3]),
+                          float(nums[0]), float(nums[1]))
+
+
+
+
+
+
+# sr = StateRepresentor(20, 50)
+# sr.draw_rectangle('1', 2, 4, 4, 8)
+# sr.draw_rectangle('2', 19, 3, 2, 6)
+
+file_contents = txtReader()
+
+visualize(file_contents)
+
+
 
 plt.show()
-

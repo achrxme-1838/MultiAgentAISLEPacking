@@ -1,55 +1,59 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
-struct skyline{
+struct Skyline{
     int x{};
     int lower_y{};
     int upper_y{};
 };
 
-struct pos{
+struct Pos{
     float x; float y;
 };
 
-struct candidatePos{
-    pos position;
+struct CandidatePos{
+    Pos position;
 
     bool left_wall;
     bool lower_corner;
 };
 
-struct box{
+struct Box{
     int width{};
     int height{};
     bool packed {false};
-    pos packed_center_pos{};
+    Pos packed_center_pos{};
 };
 
-struct config{
-    vector<skyline> left_sky_lines{};
-    vector<skyline> right_sky_lines{};
-    vector<box> packed_boxes{};
+struct Config{
+    vector<Skyline> left_sky_lines{};
+    vector<Skyline> right_sky_lines{};
+
+    vector<CandidatePos> CPs{};
+
+    vector<Box> packed_boxes{};
 };
 
 class Packer {
 private:
-    config cfg;
+    Config cfg;
 
 public:
     Packer(int W, int H){
-        skyline left_wall{0, 0, H};
-        skyline right_wall{W, 0, H};
+        Skyline left_wall{0, 0, H};
+        Skyline right_wall{W, 0, H};
 
         cfg.left_sky_lines.push_back(left_wall);
         cfg.right_sky_lines.push_back(right_wall);
 
         cfg.packed_boxes.clear();
     }
-    config getCFG() { return cfg; }
+    Config getConfig() { return cfg; }
 
-    void packingBox(box target_box, candidatePos CP){
+    void packingBox(Box target_box, CandidatePos CP){
 
         // transform CP to center position
         if(CP.left_wall)    target_box.packed_center_pos.x = CP.position.x + float(target_box.width)/2;
@@ -67,11 +71,88 @@ public:
         updateSkyline(target_box, CP);
     }
 
-    void updateSkyline(box target_box, candidatePos CP){
+    void updateSkyline(Box target_box, CandidatePos CP) {
+        bool covered = false;
+        vector<Skyline> temp;
 
+        if (CP.left_wall) {
+            if (CP.lower_corner) {
+                int new_upper_y = int(CP.position.y) + target_box.height;
+                int new_lower_y = int(CP.position.y);
 
+                auto new_skyline = Skyline{int(CP.position.x) + target_box.width, new_lower_y, new_upper_y};
+                for (auto sl: cfg.left_sky_lines) {
+
+                    if (sl.lower_y == new_lower_y) {
+                        temp.push_back(new_skyline);
+                        covered = true; // to deal with covered skyline only
+                    }
+                    if (sl.lower_y >= new_upper_y and covered) covered = false;
+                    if (sl.upper_y > new_upper_y and covered) temp.push_back(Skyline{sl.x, new_upper_y, sl.upper_y});// partially covered
+                    if (!covered) temp.push_back(sl);
+                }
+            } else { // CP.upper_corner
+                int new_upper_y = int(CP.position.y);
+                int new_lower_y = int(CP.position.y) - target_box.height;
+
+                auto new_skyline = Skyline{int(CP.position.x) + target_box.width, new_lower_y, new_upper_y};
+                for (auto sl: cfg.left_sky_lines) {
+                    if(sl.lower_y <= new_lower_y and new_lower_y < sl.upper_y){
+                        covered = true;
+                        sl.upper_y = new_lower_y;
+                        temp.push_back(sl);
+                        temp.push_back(new_skyline);
+                    }
+                    if(!covered) temp.push_back(sl);
+                    if(sl.upper_y == new_upper_y and covered) covered = false;
+                }
+            }
+            cfg.left_sky_lines = temp;
+        }
+        else{ // CP.right_corner
+            if (CP.lower_corner) {
+                int new_upper_y = int(CP.position.y) + target_box.height;
+                int new_lower_y = int(CP.position.y);
+
+                auto new_skyline = Skyline{int(CP.position.x) - target_box.width, new_lower_y, new_upper_y};
+                for (auto sl: cfg.right_sky_lines) {
+
+                    if (sl.lower_y == new_lower_y) {
+                        temp.push_back(new_skyline);
+                        covered = true; // to deal with covered skyline only
+                    }
+                    if (sl.lower_y >= new_upper_y and covered) covered = false;
+                    if (sl.upper_y > new_upper_y and covered) temp.push_back(Skyline{sl.x, new_upper_y, sl.upper_y});// partially covered
+                    if (!covered) temp.push_back(sl);
+                }
+            } else { // CP.upper_corner
+                int new_upper_y = int(CP.position.y);
+                int new_lower_y = int(CP.position.y) - target_box.height;
+
+                auto new_skyline = Skyline{int(CP.position.x) - target_box.width, new_lower_y, new_upper_y};
+                for (auto sl: cfg.right_sky_lines) {
+                    if (sl.lower_y <= new_lower_y and new_lower_y < sl.upper_y) {
+                        covered = true;
+                        sl.upper_y = new_lower_y;
+                        temp.push_back(sl);
+                        temp.push_back(new_skyline);
+                    }
+                    if (!covered) temp.push_back(sl);
+                    if (sl.upper_y == new_upper_y and covered) covered = false;
+                }
+            }
+            cfg.right_sky_lines = temp;
+        }
     }
 
+    void generateCP(){
+        int prev_x = 10000;
+        for(auto sl : cfg.left_sky_lines){
+            if(sl.x < prev_x){
 
+            }
+        }
+
+    }
 
 };
